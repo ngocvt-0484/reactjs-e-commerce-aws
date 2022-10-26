@@ -17,7 +17,8 @@ class App extends React.Component {
       branchs: [],
       error: null,
       inputSearch: '',
-      selectedCategory: null
+      selectedCategory: null,
+      showClear: false
   };
   getFetchProducts() {
     this.setState({
@@ -60,10 +61,19 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    // chỉ gọi 1 lần trên client sau khi render
     this.getFetchProducts();
     this.getFetchCategories();
     this.getFetchTypes();
     this.getFetchBranchs();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.showClear !== this.state.showClear && this.state.showClear == false) {
+      console.log('clear false.')
+
+
+    }
   }
 
   search = () => {
@@ -72,14 +82,14 @@ class App extends React.Component {
     const selectedBranchIds = this.state.branchs.filter(branch => branch.checked == true).map(branch => branch.id);
     const selectedCategory = this.state.selectedCategory;
     if (val == '' && selectedTypeIds.length == 0 && selectedBranchIds == 0 && selectedCategory == null) {
-      this.setState({products: this.state.originProducts})
+      this.setState({products: this.state.originProducts, showClear: false})
     } else {
       let updatedProductList = this.state.products;
       if (selectedCategory) {
         updatedProductList = this.state.originProducts;
       }
       updatedProductList = updatedProductList.filter(product => this.filterProduct(product, selectedTypeIds, selectedBranchIds, selectedCategory));
-      this.setState({products: updatedProductList})
+      this.setState({products: updatedProductList, showClear: true})
     }
   };
 
@@ -116,6 +126,10 @@ class App extends React.Component {
   handleClickCategory = (id) => {
     this.setState({selectedCategory: id});
     this.search();
+  };
+
+  clearSearch = () => {
+    this.setState({inputSearch: '', selectedCategory: null})
   };
 
   render() {
@@ -166,7 +180,15 @@ class App extends React.Component {
 
         <div className="content-wrapper">
           <aside>
-            <div id="clear-all" />
+            <div id="clear-all" style={{ display: this.state.showClear ? 'block' : 'none' }}>
+              <div class="ais-root ais-clear-all btn btn-block btn-default">
+                <div class="ais-body ais-clear-all--body">
+                  <a class="ais-clear-all--link" href="#"  >
+                    <div><i class="fa fa-eraser"></i> Clear all filters</div>
+                  </a>
+                </div>
+              </div>
+            </div>
             <section className="facet-wrapper">
               <div className="facet-category-title">Show results for</div>
               <div id="categories">
